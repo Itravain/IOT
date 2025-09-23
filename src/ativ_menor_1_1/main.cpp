@@ -9,6 +9,7 @@
 
 #define LED1_PIN 2
 #define LED2_PIN 4
+#define BATERY_LED 26
 #define DATAPATH1_PIN 13
 #define DATAPATH2_PIN 12
 
@@ -16,6 +17,10 @@ int estadoAtual = IDLE;
 unsigned long timerEstado;
 unsigned long timerLED1;
 unsigned long timerLED2;
+
+unsigned long duracao;
+float battery = 0;
+
 boolean estadoLED1 = false;
 boolean estadoLED2 = false;
 
@@ -53,6 +58,7 @@ void idle() {
 }
 
 void cleaning() {
+  dacWrite(BATERY_LED, 255 - duracao/(float)TEMPO_TRANSICAO * 255);
   digitalWrite(DATAPATH1_PIN, HIGH);
   digitalWrite(DATAPATH2_PIN, LOW);
   digitalWrite(LED2_PIN, LOW);
@@ -77,6 +83,7 @@ void docking() {
 }
 
 void charging() {
+  dacWrite(BATERY_LED, duracao/(float)TEMPO_TRANSICAO * 255);
   digitalWrite(DATAPATH1_PIN, HIGH);
   digitalWrite(DATAPATH2_PIN, HIGH);
   if (millis() - timerLED1 >= INTERVALO_LED1) {
@@ -110,7 +117,9 @@ void setup() {
 
 void loop() {
   char comando = lerComando();
-  
+  duracao = millis() - timerEstado;
+
+
   switch (estadoAtual) {
     case IDLE:
       idle();
@@ -123,14 +132,14 @@ void loop() {
       cleaning();
       if (comando == 'b') {
         mudarEstado(DOCK);
-      } else if (millis() - timerEstado >= TEMPO_TRANSICAO) {
+      } else if (duracao >= TEMPO_TRANSICAO) {
         mudarEstado(DOCK);
       }
       break;
       
     case DOCK:
       docking();
-      if (millis() - timerEstado >= TEMPO_TRANSICAO) {
+      if (duracao >= TEMPO_TRANSICAO) {
         mudarEstado(CHRG);
       }
       break;
@@ -139,7 +148,7 @@ void loop() {
       charging();
       if (comando == 'a') {
         mudarEstado(CLEAN);
-      } else if (millis() - timerEstado >= TEMPO_TRANSICAO) {
+      } else if (duracao >= TEMPO_TRANSICAO) {
         mudarEstado(IDLE);
       }
       break;
