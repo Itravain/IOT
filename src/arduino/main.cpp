@@ -17,17 +17,16 @@
 #define HC_MAX_DISTANCE 400
 NewPing sonar(HC_TRIGGER_PIN, HC_ECHO_PIN, HC_MAX_DISTANCE);
 
-#define DHT_VCC 4
 #define DHT_DATA 3
 #define DHTTYPE DHT11
 DHT dht(DHT_DATA, DHTTYPE);
 
 #define LDR_PIN A0
 
-#define DIST_PIN0 22
-#define DIST_PIN1 23
-#define LUZ_PIN   24
-#define UMID_PIN  25
+#define DIST_PIN0 15
+#define DIST_PIN1 14
+#define LUZ_PIN   16
+#define UMID_PIN  10
 
 unsigned long timerEstado;
 unsigned long timerLED1;
@@ -112,39 +111,44 @@ void charging() {
 void lerSensores() {
   unsigned int dist = sonar.ping_cm();
   if (dist == 0) dist = HC_MAX_DISTANCE;
-  if (dist > 200) estadoDist = 0;
-  else if (dist > 100) estadoDist = 1;
-  else if (dist > 30) estadoDist = 2;
+  if (dist > 50) estadoDist = 0;
+  else if (dist > 20) estadoDist = 1;
+  else if (dist > 10) estadoDist = 2;
   else estadoDist = 3;
 
   if (estadoDist != ultimoEstadoDist) {
-    Serial.print("Distância mudou para: ");
-    if (estadoDist == 0) Serial.println("Sem obstáculo");
-    else if (estadoDist == 1) Serial.println("Obstáculo longe");
-    else if (estadoDist == 2) Serial.println("Obstáculo meia distância");
-    else Serial.println("Obstáculo perto");
+    // Serial.print("Distância mudou para: ");
+    // if (estadoDist == 0) Serial.println("Sem obstáculo");
+    // else if (estadoDist == 1) Serial.println("Obstáculo longe");
+    // else if (estadoDist == 2) Serial.println("Obstáculo meia distância");
+    // else Serial.println("Obstáculo perto");
     ultimoEstadoDist = estadoDist;
   }
 
   int ldrValue = analogRead(LDR_PIN);
-  estadoLuz = (ldrValue < 500) ? 1 : 0;
+  estadoLuz = (ldrValue < 60) ? 1 : 0;
   if (estadoLuz != ultimoEstadoLuz) {
-    Serial.print("Luminosidade mudou para: ");
-    if (estadoLuz == 0) Serial.println("Sem obstáculo acima");
-    else Serial.println("Obstáculo acima");
+    // Serial.print("Luminosidade mudou para: ");
+    // if (estadoLuz == 0) Serial.println("Sem obstáculo acima");
+    // else Serial.println("Obstáculo acima");
     ultimoEstadoLuz = estadoLuz;
   }
 
-  float h = dht.readHumidity();
+  float h = dht.readHumidity();     
   if (!isnan(h)) {
     estadoUmid = (h > 70.0) ? 1 : 0;
     if (estadoUmid != ultimoEstadoUmid) {
-      Serial.print("Umidade mudou para: ");
-      if (estadoUmid == 0) Serial.println("Aceitável");
-      else Serial.println("Não aceitável");
+      // Serial.print("Umidade mudou para: ");
+      // if (estadoUmid == 0) Serial.println("Aceitável");
+      // else Serial.println("Não aceitável");
       ultimoEstadoUmid = estadoUmid;
     }
   }
+  // Serial.println(estadoDist & 0x01);
+  // Serial.println((estadoDist >> 1) & 0x01);
+  // Serial.println(estadoLuz);
+  // Serial.println(estadoUmid);
+  // Serial.println(" ");
   
   digitalWrite(DIST_PIN0, estadoDist & 0x01);
   digitalWrite(DIST_PIN1, (estadoDist >> 1) & 0x01);

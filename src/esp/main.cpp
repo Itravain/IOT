@@ -127,6 +127,7 @@ void loop() {
   char comando = lerComando();
   duracao = millis() - timerEstado;
 
+
   switch (estadoAtual) {
     case IDLE:
       idle();
@@ -154,6 +155,9 @@ void loop() {
   if (millis() - timerPrint >= INTERVALO_PRINT) {
     int distBit0 = digitalRead(DIST_PIN0);
     int distBit1 = digitalRead(DIST_PIN1);
+    Serial.print(distBit0);
+    Serial.print(" ");
+    Serial.println(distBit1);
     int estadoDist = (distBit1 << 1) | distBit0;
 
     int estadoLuz = digitalRead(LUZ_PIN);

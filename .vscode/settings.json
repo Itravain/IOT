@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "wifi.h": "c",
+        "webserver.h": "c"
+    }
+}
