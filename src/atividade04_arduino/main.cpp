@@ -17,6 +17,8 @@ DHT dht(DHTPIN, DHTTYPE);
 float temperature;
 float humidity;
 
+char command;
+
 void getDistancia() {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -41,21 +43,38 @@ void getDHT()
   temperature = dht.readTemperature();
 }
 
-void receiveEvent() {
-  char c;
-  while (1 < Wire.available()) {
-    c = Wire.read();
-    Serial.print(c);
+void receiveEvent(int howMany) {
+  if(Wire.available()){
+    command = (char)Wire.read();
+    Serial.print("Recebido ");
+    Serial.print(command);
   }
-  if (c == 't'){
-    Wire.write(temperature);
-  }
-  
+
+}
+
+void requestEvent(){
+  switch (command)
+  {
+  case 'd':
+    Wire.write((byte*)&distanceCm, sizeof(float));
+    break;
+  case 't':
+    Wire.write((byte*)&temperature, sizeof(float));
+    break;
+  case 'h':
+    Wire.write((byte*)&humidity, sizeof(float));
+    break;
+  default:
+    float erro = -1.0;
+    Wire.write((byte*)&erro, sizeof(float));
+    break;
+  }  
 }
 
 void setup() {
   Wire.begin(8);
   Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
   Serial.begin(115200); 
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
